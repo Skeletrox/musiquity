@@ -1,0 +1,7 @@
+version: '3'
+services:
+        influx:
+                build: .
+                ports:
+                        - "7086:8086"
+
