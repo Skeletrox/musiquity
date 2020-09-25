@@ -1,7 +1,11 @@
 import abc
 
-class Connector(metacalass=abc.ABCMeta):
 
+class Connector(metacalass=abc.ABCMeta):
+    """
+        Base class for DB connectors. All conenctors shall inherit methods from this
+        Additional methods are allowed, but it is advisable to use the "additional" method and handle additional functionality through it
+    """
     @abc.abstractmethod
     def auth(self, **kwargs):
         """
