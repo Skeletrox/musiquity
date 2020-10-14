@@ -29,14 +29,14 @@ class InfluxConnector(Connector):
         """
             CREATEs something. Can create a database, or write a json body to measurement(s)
         """
-        database_to_create = kwargs.get("datbaase", None)
+        database_to_create = kwargs.get("database", None)
         if database_to_create is not None:
             self.client.create_database(database_to_create)
             return
 
         points_to_write = kwargs.get("points", None)
         if points_to_write is not None:
-            self.client.write_points(points_to_write)
+            self.client.write_points(points_to_write, database=self.database)
 
     def read(self, **kwargs):
         """
@@ -65,3 +65,11 @@ class InfluxConnector(Connector):
         measurement_to_delete = kwargs.get("database", None)
         if measurement_to_delete is not None:
             self.client.drop_measurement(measurement_to_delete)
+
+    def additional(self, **kwargs):
+        
+        # Switch a database
+        database_to_switch_to = kwargs.get("database_switch", None)
+        if database_to_switch_to is not None:
+            self.client.switch_database(database_to_switch_to)
+        pass
