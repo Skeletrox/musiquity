@@ -36,7 +36,7 @@ class InfluxConnector(Connector):
 
         points_to_write = kwargs.get("points", None)
         if points_to_write is not None:
-            self.client.write_points(points_to_write, database=self.database)
+            self.client.write_points(points_to_write, database=self.database, time_precision=kwargs.get("time_precision", "s"), batch_size=kwargs.get("batch_size", 10000))
 
     def read(self, **kwargs):
         """

@@ -4,14 +4,13 @@ from connectors.influxdb_connector import InfluxConnector
 from copy import deepcopy
 from datetime import datetime
 import math
+from scipy.stats import norm
 import time
 
 # change in heartbeat, just some dummy data
 UPWARDS_HEART_CHANGE = 600 # your heart rate reaches the peak in 10m
 DOWNWARDS_HEART_CHANGE = 900 # your heart rate comes back to normal in 15m
-HEART_CHANGE_PANIC = 60 # your heart rate reaches panic levels in 1m
-
-GAMMA = 0.5
+HEART_CHANGE_POST_WORKOUT = 180 # your heart rate reaches stressed levels in 3m
 
 # define constants in a dict
 TARGET_HEART_RATE_DICT = {
@@ -33,7 +32,7 @@ MEASUREMENT_TEMPLATE = {
         }
     }
 
-def generate_json_body(activity, time_delta, init_data, freq_logging=1):
+def generate_json_body(activity, time_delta, init_data, freq_logging=3):
     """
         Generates a JSON body for the appropriate activity
         
@@ -44,13 +43,14 @@ def generate_json_body(activity, time_delta, init_data, freq_logging=1):
     """
     init_heart_rate = init_data["heart_rate"]
     init_timestamp = init_data["timestamp"]
-    print("init heart rate:", init_heart_rate)
-    print("init timestamp:", init_timestamp)
-    print("delta timestamp", time_delta)
     target_heart_rate = TARGET_HEART_RATE_DICT[activity]
-    delta_heart_rate = (target_heart_rate - init_heart_rate) / (HEART_CHANGE_PANIC if activity == "PANIC" else UPWARDS_HEART_CHANGE if target_heart_rate > init_heart_rate else DOWNWARDS_HEART_CHANGE)
-    print("delta heart rate: {}".format(delta_heart_rate))
+    delta_heart_rate = (target_heart_rate - init_heart_rate) / (HEART_CHANGE_POST_WORKOUT if activity == "POST_WORKOUT" else UPWARDS_HEART_CHANGE if target_heart_rate > init_heart_rate else DOWNWARDS_HEART_CHANGE)
     current_heart_rate = init_heart_rate
+
+    # build a normal distribution curve for your heart rate
+    mean = abs(target_heart_rate - init_heart_rate) / 2
+    # Assume that the target is 2 stds from the mean
+    distrib = norm(loc=mean, scale=abs(target_heart_rate - mean) / 2)
 
     returnable_list = []
     for i in range(0,time_delta*60,freq_logging):
@@ -60,17 +60,18 @@ def generate_json_body(activity, time_delta, init_data, freq_logging=1):
             # We need current heart rate to update when delta heart rate is positive and current rate < target rate
             # And when delta heart rate is negative and current rate > target rate
             # So the log of (CR/HR) > 0 if CR > HR and < 0 if CR < HR. Multiply that with delta and take the sign
-            current_heart_rate += delta_heart_rate*(1-GAMMA)
-        current_body = dict(MEASUREMENT_TEMPLATE)
+            current_heart_rate += delta_heart_rate*(1+distrib.pdf(current_heart_rate))
+        current_body = deepcopy(MEASUREMENT_TEMPLATE)
         current_body["fields"]["heart_rate"] = current_heart_rate
-        current_body["fields"]["movement"] = 0 if activity in ["RELAX", "PANIC"] else 1
-        current_body["time"] = datetime.strftime(datetime.fromtimestamp(init_timestamp + i), "%Y-%m-%dT%H:%M:%SZ")
+        current_body["fields"]["movement"] = 0 if activity in ["RELAX", "POST_WORKOUT"] else 1
+        current_body["time"] = int(init_timestamp + i)
         returnable_list.append(current_body)
 
+
     init_data["heart_rate"] = current_heart_rate
-    init_data["timestamp"] = init_timestamp + time_delta
+    init_data["timestamp"] = init_timestamp + time_delta*60
     return init_data, returnable_list
-    pass
+    
     
 connector = InfluxConnector()
 connector.auth(host="localhost", port=7086, database="user_metrics")
@@ -88,8 +89,8 @@ for datum in spoof_data:
     [activity, time] = datum.strip().split(" ")
     metadata, appendable = generate_json_body(activity, int(time), metadata)
     writable_json.extend(appendable)
-
+# print(len(writable_json))
 print(writable_json)
-# connector.create(points=writable_json)
-result = connector.read(query="select heart_rate from biometrics;")
-print("Result: {}".format(result))
+connector.create(points=writable_json, time_precison="s", batch_size=5000)
+# result = connector.read(query="select heart_rate from biometrics;")
+# print("Result: {}".format(result))
