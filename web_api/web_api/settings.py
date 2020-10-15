@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -73,10 +74,19 @@ WSGI_APPLICATION = 'web_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# Use a config so that we don't expose sensitive data
+
+with open(BASE_DIR / 'web_api/config.json') as conf:
+    data = json.loads(conf.read())
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'musiquity',
+        'USER': data["mysql_data"]["username"],
+        'PASSWORD': data["mysql_data"]["password"],
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 
