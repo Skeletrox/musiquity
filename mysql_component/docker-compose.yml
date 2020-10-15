@@ -1,4 +1,9 @@
 version: '3'
+
+volumes:
+        mysql_volume:
+                external: true
+                
 services:
         db:
                 build: .
@@ -9,6 +14,8 @@ services:
                         - 33060:33060
                 environment:
                         MYSQL_ROOT_PASSWORD: example
+                volumes:
+                        - mysql_volume:/var/lib/mysql
 
         adminer:
                 image: adminer
