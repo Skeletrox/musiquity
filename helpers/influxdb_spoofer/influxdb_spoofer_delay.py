@@ -1,8 +1,7 @@
 # writes data to influxdb in 1s intervals
 
-from connectors.influxdb_connector import InfluxConnector
+import requests
 from copy import deepcopy
-from datetime import datetime
 import math
 from scipy.stats import norm
 import time
@@ -20,16 +19,14 @@ TARGET_HEART_RATE_DICT = {
     "POST_WORKOUT": 100
 }
 
+user_id = "143099c0-be54-4ab8-8769-12dd8b8f52e5"
+url = "http://127.0.0.1:8000/data/new"
+
 MEASUREMENT_TEMPLATE = {
-        "measurement": "biometrics",
-        "tags": {
-            "user_id": 1,
-        },
-        "time": None,
-        "fields": {
-            "heart_rate": 85,
-            "movement": 0
-        }
+        "user_id" : user_id,
+        "heart_rate": 80,
+        "movement": 1,
+        "timestamp": None
     }
 
 def generate_json_body(activity, time_delta, init_data, freq_logging=3):
@@ -62,8 +59,8 @@ def generate_json_body(activity, time_delta, init_data, freq_logging=3):
             # So the log of (CR/HR) > 0 if CR > HR and < 0 if CR < HR. Multiply that with delta and take the sign
             current_heart_rate += delta_heart_rate*(1+distrib.pdf(current_heart_rate))
         current_body = deepcopy(MEASUREMENT_TEMPLATE)
-        current_body["fields"]["heart_rate"] = current_heart_rate
-        current_body["fields"]["movement"] = 0 if activity in ["RELAX", "POST_WORKOUT"] else 1
+        current_body["heart_rate"] = current_heart_rate
+        current_body["movement"] = 0 if activity in ["RELAX", "POST_WORKOUT"] else 1
         current_body["time"] = int(init_timestamp + i)
         returnable_list.append(current_body)
 
@@ -72,11 +69,7 @@ def generate_json_body(activity, time_delta, init_data, freq_logging=3):
     init_data["timestamp"] = init_timestamp + time_delta*60
     return init_data, returnable_list
     
-    
-connector = InfluxConnector()
-connector.auth(host="localhost", port=7086, database="user_metrics")
-connector.create(database="user_metrics")
-connector.additional(database_switch="user_metrics")
+
 spoof_data = []
 with open("spoof_schedule.txt", "r") as spoof:
     spoof_data = spoof.read().split("\n")
@@ -88,6 +81,8 @@ for datum in spoof_data:
     [activity, curr_time] = datum.strip().split(" ")
     metadata, appendable = generate_json_body(activity, int(curr_time), metadata)
     for a in appendable:
-        connector.create(points=[a], time_precison="s")
+        print(a)
+        r = requests.post(url, json=a)
+        print(r.status_code)
         time.sleep(3)
         print("Point written.")
