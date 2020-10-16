@@ -1,0 +1,7 @@
+version: '3'
+services:
+        redis_db:
+                build: .
+                ports:
+                        - "6379:6379"
+

@@ -1,4 +1,4 @@
-FROM couchbase:latest
+FROM redis:latest
 RUN apt-get update
 WORKDIR /test
 COPY . .
