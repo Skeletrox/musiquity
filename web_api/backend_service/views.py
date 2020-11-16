@@ -10,6 +10,7 @@ import redis
 # Create your views here.
 
 influx_conn_object = None
+redis_conn_object = None
 
 # initializes the influx connector object if it hasn't been done already
 def initialize_influx_conn_object():
@@ -78,4 +79,42 @@ def get_seed_list(request,user):
 
 # get current user data from redis
 def get_user_from_redis(request,user):
-    pass
+    global redis_conn_object
+    if not redis_conn_object:
+        redis_conn_object = redis.Redis()
+    
+    # track list is stored as user_tracklist, heart_rate is stored as user_heartrate
+    heart_rate = redis_conn_object.get("{}_heartrate".format(user)).decode("utf-8")
+    track_list = redis_conn_object.get("{}_tracklist".format(user)).decode("utf-8")
+    track_list = json.loads(track_list)
+
+    returnable = {
+        "heart_rate": int(heart_rate),
+        "track_list": track_list
+    }
+
+    return JsonResponse({"success": True, "returnable": returnable})
+
+# get current user data from redis
+@csrf_exempt
+def set_user_in_redis(request,user):
+    global redis_conn_object
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'msg': 'Expected POST'})
+
+    if not redis_conn_object:
+        redis_conn_object = redis.Redis()
+    
+    json_body = json.loads(request.body.decode("utf-8"))
+    heart_rate = int(json_body["heart_rate"])
+    track_list = json_body["track_list"]
+    # track list is stored as user_tracklist, heart_rate is stored as user_heartrate
+    heart_rate_response = redis_conn_object.set("{}_heartrate".format(user), heart_rate)
+    track_list_response = redis_conn_object.set("{}_tracklist".format(user), json.dumps(track_list))
+
+    returnable = {
+        "heart_rate": heart_rate_response,
+        "track_list": track_list_response
+    }
+
+    return JsonResponse({"success": True, "returnable": returnable})
