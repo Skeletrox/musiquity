@@ -2,7 +2,10 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from connectors.influxdb_connector import InfluxConnector
 from django.views.decorators.csrf import csrf_exempt
+from user_service.models import User
+from .models import SeedList
 import json
+import redis
 
 # Create your views here.
 
@@ -50,7 +53,7 @@ def upload_telemetry(request):
     return JsonResponse({'success': True, 'msg': 'Points Written'})
 
 
-# telemetry download middlware
+# telemetry download middleware
 def read_points(request,user,since):
     global influx_conn_object
     if influx_conn_object is None:
@@ -60,3 +63,19 @@ def read_points(request,user,since):
     points = influx_conn_object.read(query=prepared_query)
     returnable = [p for p in points["biometrics"]]
     return JsonResponse({'success': True, 'points': returnable})
+
+
+# get seed list
+def get_seed_list(request,user):
+    my_user = User.objects.get(user_id=user)
+    seed_lists = SeedList.objects.filter(user=my_user)
+    returnable = {}
+    for s in seed_lists:
+        returnable[s.mode] = s.seed_list
+
+    return JsonResponse({'success': True, 'user_id': user, 'seeds': returnable})
+
+
+# get current user data from redis
+def get_user_from_redis(request,user):
+    pass
