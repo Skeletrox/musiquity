@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from connectors.influxdb_connector import InfluxConnector
 from django.views.decorators.csrf import csrf_exempt
 from user_service.models import User
-from .models import SeedList
+from .models import SeedList, Cutoff
 import json
 import redis
 
@@ -60,7 +60,7 @@ def read_points(request,user,since):
     if influx_conn_object is None:
         initialize_influx_conn_object()
 
-    prepared_query = "SELECT timestamp, heart_rate, movement FROM biometrics WHERE user_id = '{}' and time > now() - {}".format(user, since)
+    prepared_query = "SELECT heart_rate FROM biometrics WHERE user_id = '{}' and time > now() - {}".format(user, since)
     points = influx_conn_object.read(query=prepared_query)
     returnable = [p for p in points["biometrics"]]
     return JsonResponse({'success': True, 'points': returnable})
@@ -118,3 +118,30 @@ def set_user_in_redis(request,user):
     }
 
     return JsonResponse({"success": True, "returnable": returnable})
+
+
+# set heart rate
+@csrf_exempt
+def set_heart_rate(request, user):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'msg': 'Expected POST'})
+    
+    my_user = User.objects.get(user_id=user)
+    json_body = json.loads(request.body.decode("utf-8"))
+    for key in json_body.keys():
+        my_obj = Cutoff.objects.get(user=my_user,mode=key)
+        my_obj.heart_rate = json_body[key]
+        my_obj.save()
+
+    return JsonResponse({"success": True})
+
+
+def get_heart_rate(request, user):
+    
+    my_user = User.objects.get(user_id=user)
+    cutoffs = Cutoff.objects.filter(user=my_user)
+    returnable = {}
+    for c in cutoffs:
+        returnable[c.mode] = c.heart_rate
+
+    return JsonResponse({'success': True, 'user_id': user, 'cutoffs': returnable})
