@@ -19,6 +19,10 @@ class SeedList(models.Model):
     seed_list = ListTextField(base_field  = models.CharField(max_length=40), size=20)
 
 
+    def __str__(self):
+        return "Seed list for {} and {}".format(self.user, self.mode)
+
+
 
 class Cutoff(models.Model):
     """
@@ -34,3 +38,7 @@ class Cutoff(models.Model):
     user = models.ForeignKey("user_service.User", on_delete=models.CASCADE)
     mode = models.CharField(max_length=12, choices=MODE_CHOICES, default="RELAX")
     heart_rate = models.IntegerField()
+
+
+    def __str__(self):
+        return "Seed list for {} and {}".format(self.user, self.mode)

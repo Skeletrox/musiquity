@@ -62,7 +62,6 @@ def read_points(request,user,since):
 
     prepared_query = "SELECT heart_rate FROM biometrics WHERE user_id = '{}' and time > now() - {}".format(user, since)
     points = influx_conn_object.read(query=prepared_query)
-    print(points)
     returnable = [p for p in points["biometrics"]]
     return JsonResponse({'success': True, 'points': returnable})
 
