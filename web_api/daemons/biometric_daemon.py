@@ -6,12 +6,15 @@ client = DataFrameClient(host="localhost", port=7086, database="user_metrics")
 
 
 def poll_predict(user_id):
-    res = client.query('select timestamp, heart_rate, movement from biometrics where user_id = "{}"'.format(user_id))
+    res = client.query('select timestamp, heart_rate, movement from biometrics where user_id = "{}" and time > now - 30s;'.format(user_id))
     df = res["biometrics"]
     vals = list(df.heart_rate.values)
 
     predictions = []
-    num_steps = max(1, len(vals) - 10)
+    if len(df):
+        num_steps = max(1, len(vals) - 10)
+    else:
+        num_steps = 0
     for i in range(num_steps):
         wanted = vals[i:i+10]
         model = AutoReg(wanted, lags=1)
