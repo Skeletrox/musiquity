@@ -1,17 +1,16 @@
-from influxdb import DataFrameClient
-import pandas as pd
 from statsmodels.tsa.ar_model import AutoReg
+import requests
 
-client = DataFrameClient(host="localhost", port=7086, database="user_metrics")
+POLL_URL = "http://127.0.0.1:8000/data/read/{}/{}"
 
 
-def poll_predict(user_id):
-    res = client.query('select timestamp, heart_rate, movement from biometrics where user_id = "{}" and time > now - 30s;'.format(user_id))
-    df = res["biometrics"]
-    vals = list(df.heart_rate.values)
-
+def poll_predict(user_id, since):
+    r = requests.get(POLL_URL.format(user_id, since))
+    data = r.json()
+    vals = data.get("points", None)
+    vals = [v["heart_rate"] for v in vals]
     predictions = []
-    if len(df):
+    if vals:
         num_steps = max(1, len(vals) - 10)
     else:
         num_steps = 0

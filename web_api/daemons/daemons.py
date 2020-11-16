@@ -1,5 +1,30 @@
-from .biometric_daemon import poll_predict
+from biometric_poll import poll_predict
+from music_recommender import recommend
+import requests
+import time
 
-returnable = {
-    "poll_predict": poll_predict
-}
+USER_ID = "f7f41c96-2e97-46f3-9063-4f5f11218262"
+SINCE = "10m"
+
+# URL to get user seed data
+USER_SEED_URL = "http://127.0.0.1:8000/data/seeds/{}"
+
+# URL to set recommendations
+SET_RECS_URL = "http://127.0.0.1:8000/data/set_tracks/{}"
+
+# URL to get heart rate data
+GET_HR_URL = "http://127.0.0.1:8000/data/get_cutoffs/{}"
+
+while True:
+    results = poll_predict(USER_ID, SINCE)
+    first_rate = results[0]
+    last_rate = results[-1]
+    r = requests.get(USER_SEED_URL.format(USER_ID))
+    seed_dict = r.json()
+    r = requests.get(GET_HR_URL.format(USER_ID))
+    hr_dict = r.json()
+    returnable = recommend(first_rate, last_rate, seed_dict["seeds"], hr_dict["cutoffs"])
+    uris = [ret["uri"] for ret in returnable]
+    r = requests.post(SET_RECS_URL.format(USER_ID), json={"heart_rate": first_rate, "track_list": uris})
+    print(r.status_code)
+    time.sleep(30)
