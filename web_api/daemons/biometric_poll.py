@@ -21,4 +21,4 @@ def poll_predict(user_id, since):
         yhat = model_fit.predict(len(wanted), len(wanted))
         predictions.extend(list(yhat))
 
-    return predictions
+    return predictions[-10:]

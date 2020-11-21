@@ -7,8 +7,8 @@ from scipy.stats import norm
 import time
 
 # change in heartbeat, just some dummy data
-UPWARDS_HEART_CHANGE = 600 # your heart rate reaches the peak in 10m
-DOWNWARDS_HEART_CHANGE = 900 # your heart rate comes back to normal in 15m
+UPWARDS_HEART_CHANGE = 120 # your heart rate reaches the peak in 2m
+DOWNWARDS_HEART_CHANGE = 180 # your heart rate comes back to normal in 3m
 HEART_CHANGE_POST_WORKOUT = 180 # your heart rate reaches stressed levels in 3m
 
 # define constants in a dict
