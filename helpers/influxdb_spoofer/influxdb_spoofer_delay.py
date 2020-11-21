@@ -19,7 +19,7 @@ TARGET_HEART_RATE_DICT = {
     "POST_WORKOUT": 100
 }
 
-user_id = "f7f41c96-2e97-46f3-9063-4f5f11218262"
+user_id = "skeletrox"
 url = "http://127.0.0.1:8000/data/new"
 
 MEASUREMENT_TEMPLATE = {

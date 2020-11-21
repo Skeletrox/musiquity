@@ -68,7 +68,7 @@ def read_points(request,user,since):
 
 # get seed list
 def get_seed_list(request,user):
-    my_user = User.objects.get(user_id=user)
+    my_user = User.objects.get(user_name=user)
     seed_lists = SeedList.objects.filter(user=my_user)
     returnable = {}
     for s in seed_lists:
@@ -126,7 +126,7 @@ def set_heart_rate(request, user):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'msg': 'Expected POST'})
     
-    my_user = User.objects.get(user_id=user)
+    my_user = User.objects.get(user_name=user)
     json_body = json.loads(request.body.decode("utf-8"))
     for key in json_body.keys():
         my_obj = Cutoff.objects.get(user=my_user,mode=key)
@@ -138,7 +138,7 @@ def set_heart_rate(request, user):
 
 def get_heart_rate(request, user):
     
-    my_user = User.objects.get(user_id=user)
+    my_user = User.objects.get(user_name=user)
     cutoffs = Cutoff.objects.filter(user=my_user)
     returnable = {}
     for c in cutoffs:

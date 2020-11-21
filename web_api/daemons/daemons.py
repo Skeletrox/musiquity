@@ -3,7 +3,7 @@ from music_recommender import recommend
 import requests
 import time
 
-USER_ID = "f7f41c96-2e97-46f3-9063-4f5f11218262"
+USER_ID = "skeletrox"
 SINCE = "10m"
 
 # URL to get user seed data
