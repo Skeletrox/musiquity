@@ -25,6 +25,6 @@ while True:
     hr_dict = r.json()
     returnable = recommend(first_rate, last_rate, seed_dict["seeds"], hr_dict["cutoffs"])
     uris = [ret["uri"] for ret in returnable]
-    r = requests.post(SET_RECS_URL.format(USER_ID), json={"heart_rate": first_rate, "track_list": uris}, verify=False)
+    r = requests.post(SET_RECS_URL.format(USER_ID), json={"heart_rate": last_rate, "track_list": uris}, verify=False)
     print(r.status_code)
     time.sleep(30)

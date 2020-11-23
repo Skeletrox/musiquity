@@ -68,7 +68,7 @@ def recommend(curr_rate, target_rate, seed_tracks, cutoffs):
     seed_base = min(len(seed_from), len(seed_to))
     num_from_tracks = max(1, int(len(seed_from) * (weight_from / seed_base)))
     num_to_tracks = max(1, int(len(seed_to) * (weight_to / seed_base)))
-    input_seed_tracks = list(np.random.choice(seed_from, num_from_tracks)) + list(np.random.choice(seed_to, num_to_tracks))
+    input_seed_tracks = list(set(list(np.random.choice(seed_from, num_from_tracks)) + list(np.random.choice(seed_to, num_to_tracks))))
     print(input_seed_tracks)
 
     # use the input seed tracks to get recommendations

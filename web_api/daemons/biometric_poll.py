@@ -7,7 +7,7 @@ POLL_URL = "https://127.0.0.1:8000/data/read/{}/{}"
 def poll_predict(user_id, since):
     r = requests.get(POLL_URL.format(user_id, since), verify=False)
     data = r.json()
-    vals = data.get("points", None)
+    vals = data.get("points", [])
     vals = [v["heart_rate"] for v in vals]
     predictions = []
     if vals:

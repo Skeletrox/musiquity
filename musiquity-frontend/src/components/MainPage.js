@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
-import { Header, Divider, Segment, Card, Container, Input, List, Statistic, Button, Table } from 'semantic-ui-react';
+import { Header, Divider, Segment, Input, List, Statistic, Button, Table, Icon } from 'semantic-ui-react';
 import { getUserData, getUserCutoffData } from '../actions/actions.js';
+import MyChart from './MyChart';
 import SpotifyPlayer from 'react-spotify-player';
 
 
@@ -77,20 +78,33 @@ class MainPage extends Component {
                 <Input action={{color: 'blue', labelPosition: 'right', icon: 'plus', content: 'Get data for user', onClick: this.getUserDataFromForm.bind(this)}}
                        placeholder='Enter username...' value={this.state.user_id} onChange={this.handleUserIDChange.bind(this)} />
                 <Divider></Divider>
-                <div align="center">
+                <Segment>
                     {this.state.heart_rate ? 
-                    <Card color="olive">
-                    <Statistic>
-                        <Statistic.Value>
-                        {this.state.heart_rate}
-                        </Statistic.Value>
-                        <Divider> 
-                        </Divider>
-                        <Statistic.Label>Current Heart Rate</Statistic.Label>
+                    <Segment.Group>
+                        <Segment.Group horizontal>
+                            <Segment>
+                                <Statistic>
+                                    <Statistic.Value>
+                                        {this.state.heart_rate}
+                                    </Statistic.Value>
+                                    <Divider> </Divider>
+                                    <Statistic.Label>Current Heart Rate</Statistic.Label>
+                                    <Divider></Divider>
+                                
+                                </Statistic>
+                            </Segment>
+                            <Segment>
+                            <MyChart user={this.state.user_id} hr={this.state.heart_rate}/>
+                            </Segment>
+                            <Segment>
+                            
+                            </Segment>
+                        </Segment.Group>
                         <Divider></Divider>
-                        <Button primary onClick={this.getUserCutoffsFromButton.bind(this)}>Get baselines for this user</Button>
-                    </Statistic>
-                    </Card>: null }
+                        <Segment><Button primary onClick={this.getUserCutoffsFromButton.bind(this)}>Get baselines for this user</Button></Segment>
+                    </Segment.Group>
+                    : null }
+                    
                     {this.state.cutoffs ?
                     <Segment>
                             <Table celled>
@@ -106,9 +120,19 @@ class MainPage extends Component {
                                 </Table.Body>
                             </Table>
                     </Segment>: null}
-                </div>
+                </Segment>
                 <Divider />
-                {this.state.song_metadata ? <List horizontal divided relaxed>{song_list}</List> : null}
+                {this.state.song_metadata ? 
+                <Segment>
+                    <Header as='h2' icon>
+                        <Icon name='music' />
+                        Recommendations
+                        <Header.Subheader>
+                            Recommendations based on seed tracks and Spotify's recommender systems
+                        </Header.Subheader>
+                    </Header>
+                    <List horizontal divided relaxed>{song_list}</List> 
+                </Segment>: null}
             </Segment>
         )
     }
