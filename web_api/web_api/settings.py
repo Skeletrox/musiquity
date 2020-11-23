@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'auth_service.apps.AuthServiceConfig',
     'backend_service.apps.BackendServiceConfig',
     'user_service.apps.UserServiceConfig',
     'django.contrib.admin',
@@ -40,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders'
+    'corsheaders',
+    'sslserver'
 ]
 
 MIDDLEWARE = [
