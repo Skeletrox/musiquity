@@ -1,6 +1,6 @@
 # Musiquity
 
-DSCI 551 Project
+DSCI 551 Project: Based on stramed heart rate, generates a dynamic playlist. Currently in Proof-of-Concept stage.
 
 ## Prerequisites
 
