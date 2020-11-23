@@ -1,11 +1,11 @@
 from statsmodels.tsa.ar_model import AutoReg
 import requests
 
-POLL_URL = "http://127.0.0.1:8000/data/read/{}/{}"
+POLL_URL = "https://127.0.0.1:8000/data/read/{}/{}"
 
 
 def poll_predict(user_id, since):
-    r = requests.get(POLL_URL.format(user_id, since))
+    r = requests.get(POLL_URL.format(user_id, since), verify=False)
     data = r.json()
     vals = data.get("points", None)
     vals = [v["heart_rate"] for v in vals]
